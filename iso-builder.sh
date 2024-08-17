@@ -93,6 +93,10 @@ fi
 rm -f bundle/rootfs/mkinitcpio-image.conf
 mv bundle/rootfs/initramfs.img iso/arch/boot/x86_64
 
+cat > bundle/rootfs/system.yaml <<EOF
+image: "$1"
+EOF
+
 mksquashfs bundle/rootfs iso/arch/x86_64/airootfs.sfs
 
 cat > grub.cfg <<EOF
@@ -127,14 +131,14 @@ timeout_style=menu
 
 menuentry "Boot CommonArch" --class arch --class gnu-linux --class gnu --class os --id 'archlinux' {
     set gfxpayload=keep
-    linux /arch/boot/x86_64/$(basename "$kernel") archisobasedir=arch archisosearchuuid=$UUID
+    linux /arch/boot/x86_64/$(basename "$kernel") archisobasedir=arch archisosearchuuid=$UUID copytoram=n
     initrd /arch/boot/x86_64/initramfs.img
 }
 
 
 menuentry "Boot CommonArch (nomodeset)" --class arch --class gnu-linux --class gnu --class os --id 'archlinux' {
     set gfxpayload=keep
-    linux /arch/boot/x86_64/$(basename "$kernel") nomodeset archisobasedir=arch archisosearchuuid=$UUID
+    linux /arch/boot/x86_64/$(basename "$kernel") nomodeset archisobasedir=arch archisosearchuuid=$UUID copytoram=n
     initrd /arch/boot/x86_64/initramfs.img
 }
 

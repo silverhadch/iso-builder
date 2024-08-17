@@ -37,7 +37,6 @@ Presentation
         id: background1
         source: "1-installing.png"
         width: parent.width; height: parent.height
-        verticalAlignment: Image.AlignTop
         fillMode: Image.PreserveAspectCrop
         anchors.fill: parent
     	}
