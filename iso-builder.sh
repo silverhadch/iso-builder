@@ -97,6 +97,8 @@ cat > bundle/rootfs/system.yaml <<EOF
 image: "$1"
 EOF
 
+echo "$(skopeo inspect docker://ghcr.io/commonarch/system-base-gnome:dev | jq '.Labels."org.opencontainers.image.revision" // empty' -Mcrj)" > bundle/rootfs/var/lib/commonarch/revision
+
 mksquashfs bundle/rootfs iso/arch/x86_64/airootfs.sfs
 
 cat > grub.cfg <<EOF
