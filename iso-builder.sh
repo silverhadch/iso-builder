@@ -81,7 +81,12 @@ cp -a ../etc/* bundle/rootfs/etc
 
 if [[ -f bundle/rootfs/usr/bin/sddm ]]; then
     mkdir -p bundle/rootfs/etc/sddm.conf.d
-    echo '[Autologin]' > bundle/rootfs/etc/sddm.conf.d/default.conf
+    if [[ -f bundle/rootfs/etc/sddm.conf.d/default.conf ]]; then
+        echo >> bundle/rootfs/etc/sddm.conf.d/default.conf
+        echo '[Autologin]' >> bundle/rootfs/etc/sddm.conf.d/default.conf
+    else
+        echo '[Autologin]' > bundle/rootfs/etc/sddm.conf.d/default.conf
+    fi
     echo 'User=live' >> bundle/rootfs/etc/sddm.conf.d/default.conf
 elif [[ -f bundle/rootfs/usr/bin/gdm ]]; then
     mkdir -p bundle/rootfs/etc/gdm
