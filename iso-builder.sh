@@ -74,6 +74,7 @@ echo 'live ALL=(ALL:ALL) NOPASSWD: ALL' > bundle/rootfs/etc/sudoers.d/live
 
 cp -a bundle/rootfs tmp_rootfs
 cp -a ../calamares tmp_rootfs
+systemd-nspawn -D tmp_rootfs chown live /calamares
 systemd-nspawn -D tmp_rootfs install-packages-build git base-devel
 systemd-nspawn -D tmp_rootfs runuser -u live -- env -C /calamares makepkg -s --noconfirm
 cp tmp_rootfs/calamares/*.pkg* bundle/rootfs
