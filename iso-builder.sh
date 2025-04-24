@@ -73,9 +73,9 @@ systemd-nspawn -D bundle/rootfs passwd -d live
 echo 'live ALL=(ALL:ALL) NOPASSWD: ALL' > bundle/rootfs/etc/sudoers.d/live
 
 if systemd-nspawn -D bundle/rootfs pacman -Si commonarch-calamares &>/dev/null; then
-    install-packages-build commonarch-calamares
+    systemd-nspawn -D bundle/rootfs install-packages-build commonarch-calamares
 elif systemd-nspawn -D bundle/rootfs pacman -Si calamares &>/dev/null; then
-    install-packages-build calamares
+    systemd-nspawn -D bundle/rootfs install-packages-build calamares
 else
     cp -a bundle/rootfs tmp_rootfs
     git clone https://github.com/CommonArch/commonarch-calamares tmp_rootfs/calamares
