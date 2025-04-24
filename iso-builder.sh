@@ -72,14 +72,20 @@ systemd-nspawn -D bundle/rootfs useradd -m live
 systemd-nspawn -D bundle/rootfs passwd -d live
 echo 'live ALL=(ALL:ALL) NOPASSWD: ALL' > bundle/rootfs/etc/sudoers.d/live
 
-cp -a bundle/rootfs tmp_rootfs
-cp -a ../calamares tmp_rootfs
-systemd-nspawn -D tmp_rootfs chown live /calamares
-systemd-nspawn -D tmp_rootfs install-packages-build git base-devel
-systemd-nspawn -D tmp_rootfs runuser -u live -- env -C /calamares makepkg -s --noconfirm
-cp tmp_rootfs/calamares/*.pkg* bundle/rootfs
-systemd-nspawn -D bundle/rootfs sh -c 'pacman --noconfirm -U ./*.pkg*'
-rm -f -- bundle/rootfs/*.pkg*
+if systemd-nspawn -D bundle/rootfs pacman -Qi commonarch-calamares &>/dev/null; then
+    install-packages-build commonarch-calamares
+elif systemd-nspawn -D bundle/rootfs pacman -Qi calamares &>/dev/null; then
+    install-packages-build calamares
+else
+    cp -a bundle/rootfs tmp_rootfs
+    git clone https://github.com/CommonArch/commonarch-calamares tmp_rootfs/calamares
+    systemd-nspawn -D tmp_rootfs chown live /calamares
+    systemd-nspawn -D tmp_rootfs install-packages-build git base-devel
+    systemd-nspawn -D tmp_rootfs runuser -u live -- env -C /calamares makepkg -s --noconfirm
+    cp tmp_rootfs/calamares/*.pkg* bundle/rootfs
+    systemd-nspawn -D bundle/rootfs sh -c 'pacman --noconfirm -U ./*.pkg*'
+    rm -f -- bundle/rootfs/*.pkg*
+fi
 
 cp -a ../etc/* bundle/rootfs/etc
 

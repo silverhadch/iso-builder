@@ -1,6 +1,0 @@
-*
-!.gitignore
-!49-nopasswd-calamares.rules
-!calamares_polkit
-!calamares.desktop
-!PKGBUILD
