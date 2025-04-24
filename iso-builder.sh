@@ -22,6 +22,9 @@ ln -s /var/lib/commonarch/blobs image/blobs
 umoci unpack --image image:main bundle
 rm image/blobs
 
+mkdir -p bundle/rootfs/var/lib/commonarch
+jq '.annotations."org.opencontainers.image.revision" // empty' -Mcrj bundle/config.json > bundle/rootfs/var/lib/commonarch/revision
+
 kernels=(bundle/rootfs/boot/vmlinuz-*)
 kernel="${kernels[0]}"
 
@@ -101,8 +104,6 @@ mv bundle/rootfs/initramfs.img iso/arch/boot/x86_64
 cat > bundle/rootfs/system.yaml <<EOF
 image: "$1"
 EOF
-
-echo "$(skopeo inspect docker://ghcr.io/commonarch/system-base-gnome:dev | jq '.Labels."org.opencontainers.image.revision" // empty' -Mcrj)" > bundle/rootfs/var/lib/commonarch/revision
 
 mksquashfs bundle/rootfs iso/arch/x86_64/airootfs.sfs
 
@@ -195,30 +196,12 @@ sync
 umount "$BOOT_IMG_DATA"
 rm -rf "$BOOT_IMG_DATA"
 
-# https://www.willhaley.com/blog/custom-debian-live-environment-grub-only/
-
-# grub-mkstandalone \
-#     --format=i386-pc \
-#     --install-modules="linux normal iso9660 biosdisk search tar ls" \
-#     --modules="linux normal iso9660 biosdisk search" \
-#     --locales="" \
-#     --fonts="" \
-#     -o "core.img" "boot/grub/grub.cfg=./grub.cfg"
-
 grub-mkimage -o core.img -p /boot/grub -O i386-pc all_video at_keyboard boot btrfs biosdisk iso9660 multiboot configfile echo halt reboot exfat ext2 linux ntfs usb sleep xfs zstd
 
 cat \
     bundle/rootfs/usr/lib/grub/i386-pc/cdboot.img \
     core.img \
 > iso/boot/grub/eltorito.img
-
-# grub-mkstandalone -O i386-pc-eltorito \
-#     --modules="${grubmodules[*]}" \
-#     --locales="en@quot" \
-#     --themes="" \
-#     --sbat=/usr/share/grub/sbat.csv \
-#     --disable-shim-lock \
-#     -o "${BOOT_IMG_DATA}/EFI/BOOT/BOOTx64.EFI" "boot/grub/grub.cfg=./grub.cfg"
 
 rm -f ../commonarch.iso
 
@@ -239,48 +222,3 @@ xorriso \
 
 cd ..
 rm -rf .build
-
-# xorriso \
-#     -volume_date uuid "${UUID//-}" \
-#     -as mkisofs \
-#     -V 'CommonArch' \
-#     -b boot/grub/eltorito.img \
-#     -e boot/grub/efi.img \
-#     -append_partition 2 0xef "${PWD}/iso/boot/grub/efi.img" \
-#     -no-emul-boot \
-#     -o ../commonarch.iso \
-#     iso
-
-# xorriso \
-#     -volume_date uuid "${UUID//-}" \
-#     -as mkisofs \
-#     -iso-level 3 \
-#     -full-iso9660-filenames \
-#     -eltorito-boot \
-#         boot/grub/bios.img \
-#         -no-emul-boot \
-#         -boot-load-size 4 \
-#         -boot-info-table \
-#         --eltorito-catalog boot/grub/boot.cat \
-#     --grub2-boot-info \
-#     --grub2-mbr "${PWD}/bundle/rootfs/usr/lib/grub/i386-pc/boot_hybrid.img" \
-#     -eltorito-alt-boot \
-#         -e boot/grub/efi.img \
-#         -no-emul-boot \
-#     -append_partition 2 0xef "${PWD}/iso/boot/grub/efi.img" \
-#     -b boot/grub/bios.img \
-#     -o ../commonarch.iso \
-#     iso
-
-# xorriso \
-#     -volume_date uuid "${UUID//-}" \
-#     -as mkisofs \
-#     -V 'CommonArch' \
-#     -e boot/grub/efi.img \
-#     -no-emul-boot \
-#     -o ../commonarch.iso \
-#     iso
-
-    # -e iso/boot/grub/efi.img \
-
-    # -J -joliet-long \
